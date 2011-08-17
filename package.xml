@@ -15,8 +15,8 @@
  </lead>
  <date>2011-08-17</date>
  <version>
-   <release>0.9.0beta1</release>
-   <api>0.9.0beta1</api>
+   <release>0.9.0</release>
+   <api>0.9.0</api>
  </version>
  <stability>
   <release>beta</release>
@@ -28,43 +28,43 @@
   <dir name="/">
    <dir name="config">
     <file name="app.yml" role="data" />
-    <file name="isicsHttpCachePluginConfiguration.class.php" role="php" />    
+    <file name="isicsHttpCachePluginConfiguration.class.php" role="data" />    
    </dir>
    <dir name="lib">
     <dir name="helper">
-     <file name="isicsHttpCacheHelper.php" role="php" />
+     <file name="isicsHttpCacheHelper.php" role="data" />
     </dir>
     <dir name="service">
-     <file name="isicsHttpCacheService.class.php" role="php" />
+     <file name="isicsHttpCacheService.class.php" role="data" />
     </dir>    
    </dir>
    <dir name="modules">
     <dir name="isicsHttpCacheESI">
      <dir name="actions">
-      <file name="actions.class.php" role="php" />
+      <file name="actions.class.php" role="data" />
      </dir>
      <dir name="lib">
-      <file name="BaseisicsHttpCacheESIActions.class.php" role="php" />
+      <file name="BaseisicsHttpCacheESIActions.class.php" role="data" />
      </dir>
      <dir name="templates">
-      <file name="renderSuccess.php" role="php" />
+      <file name="renderSuccess.php" role="data" />
      </dir>
     </dir>
    </dir>
    <dir name="test">
     <dir name="unit">
-     <file name="isicsHttpCacheTest.php" role="test" />
+     <file name="isicsHttpCacheTest.php" role="data" />
     </dir>
    </dir>
    <file name="LICENSE" role="data" />
-   <file name="README" role="doc" />
+   <file name="README" role="data" />
   </dir>
  </contents>
 
  <dependencies>
   <required>
    <php>
-    <min>5.2.0</min>
+    <min>5.1.0</min>
    </php>
    <pearinstaller>
     <min>1.4.1</min>
@@ -84,8 +84,8 @@
  <changelog>    
   <release>
    <version>
-    <release>0.9.0beta1</release>
-    <api>0.9.0beta1</api>
+    <release>0.9.0</release>
+    <api>0.9.0</api>
    </version>
    <stability>
     <release>beta</release>
