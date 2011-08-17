@@ -1,93 +1,146 @@
 # isicsHttpCachePlugin #
 
-Excited by Symfony2 Http Cache but still have heavy load projects to maintain under Symfony 1.4?
+Excited by **Symfony2 Http Cache** but still have heavy load projects to maintain under Symfony 1.4?  
 Inspired by Symfony2 (concpets and code), this plugin is for you!
 
-isicsHttpCachePlugin fits to our (basic) actual requirements and doesn't already provides all HTTP cache mechanisms.
-But feel free to contribute!
-
+isicsHttpCachePlugin fits to our (basic) actual requirements and doesn't already provides all HTTP cache mechanisms. But feel free to contribute!
 
 It comes with :
-* 1 new method for sfWebRequest:
-  * `getETags()`
-* 4 new methods for sfWebResponse:
-  * `isNotModified(sfWebRequest $request)`
-  * `setETag($etag)`
-  * `setLastModified($date)`
-  * `setMaxAge($duration)`
-* ESI support via 2 new helpers:
-  * `include_component_esi($module_name, $component_name, $vars)`
-  * `include_partial_esi($template_name, $vars)`
+
+*   1 new method for sfWebRequest:
+    * `getETags()`
+*   4 new methods for sfWebResponse:
+    * `isNotModified(sfWebRequest $request)`
+    * `setETag($etag)`
+    * `setLastModified($date)`
+    * `setMaxAge($duration)`
+*   ESI support via 2 new helpers:
+    * `include_component_esi($module_name, $component_name, $vars)`
+    * `include_partial_esi($template_name, $vars)`
   
-The new methods are unit tested.
+_The new methods are unit tested._
 
 
 ## Benchmark ##
 
 We've made a first benchmark with an homepage between 2 versions with exactly the same cache strategy:
 
-1. a classical version with Symfony cache (optimized, 0 SQL queries)
-  6 cached components with different TTL and so no cache for action
-
-1. a version with Varnish 
-  TTL for action and 7 ESI tags (1 userbar without caching and the 6 others with different TTL)
-  Symfony is still called at each request but only for userbar.
+*   a classical version with Symfony cache (optimized, 0 SQL queries)
+    
+    6 cached components with different TTL and so no cache for action
+    
+*   a version with Varnish 
+    
+    TTL for action and 7 ESI tags (1 userbar without caching and the 6 others with different TTL)
+    Symfony is still called at each request but only for userbar.
   
-The benchmark was made with Siege tool.
-It shows a 10 factor between Varnish and Symfony cache (400 req/sec vs 40).
+The benchmark was made with Siege tool.  
+It shows a 10 factor between Varnish and Symfony cache (_400 req/sec vs 40_).
 
 
 ## ESI (Edge Side Includes) support ##
 
 The new helpers `include_component_esi`, `include_partial_esi` are very similar to Symfony ones.
 
-If ESI are enabled (true by default in prod env) and only if a gateway handling ESI is installed (we know that thanks to a dedicated header), an ESI tag is rendered rather than the content.
-Rendering the content is the role of a special action.
+If ESI are enabled (true by default in prod env) and only if a gateway handling ESI is installed (we know that thanks to a dedicated header), an ESI tag is rendered rather than the content.  
+Rendering the content is the role of a special action.  
 Else, the content is direclty rendered exactly like with the Symfony helpers.
 
 As of Symfony2, cache expiration and validation mechanisms are supported.
 
-Both helpers accept an optional `cache` argument.
+Both helpers accept an optional `cache` argument.  
 The value has a mixed type:
 
-* For expiration, simply give a duration in seconds:
-[php]
-<?php include_compoent_esi('news', 'showLatest', array('limit' => 5, 'cache' => 300)) ?>
-In this example, the latest news component will be refresh every 5 minutes.
+*   For expiration, simply give a duration in seconds:  
 
+        [php]
+        <?php include_component_esi('news', 'showLatest', array('limit' => 5, 'cache' => 300)) ?>
+    In this example, the latest news component will be refresh every 5 minutes.
 
-* For validation, the argument value must be a string. It corresponds to a class name that must defines one or both static methods `getLastModified` and `getETag`:
+*   For validation, the argument value must be a string.  
 
-[php]
-<?php include_component_esi('news', 'showLatest', array('limit' => 5, 'cache' => 'NewsService') ?>
+        [php]
+        <?php include_component_esi('news', 'showLatest', array('limit' => 5, 'cache' => 'NewsService') ?>  
+    
+    It corresponds to a class name that must defines one or both static methods `getLastModified()` and `getETag()`:    
+    
+        [php]
+        <?php
 
-[php]
-<?php
+        static public function getLastModified($vars)
+        {
+          return NewsPeer::getLastModified();
+        }
 
-static public function getLastModified($vars)
-{
-  return NewsPeer::getLastModified();
-}
+    and/or :
 
-and/or :
+        [php]
+        <?php
+        static public function getETag($vars)
+        {
+          return NewsPeer::computeETag();
+        }
 
-[php]
-<?php
-static public function getETag($vars)
-{
-  return NewsPeer::computeETag();
-}
+    Note the `$vars` argument. It is the vars you passed to the helpers. Use it as you like ;)
 
-Note the `$vars` argument. It is the vars you passed to the helpers. Use it as you like ;)
+## Installation ##
 
+Install the plugin:
+
+    $ symfony plugin:install -stability=beta isicsHttpCachePlugin
+    
+Enable the plugin in your `/config/ProjectConfiguration.class.php`:
+
+    [php]
+    class ProjectConfiguration extends sfProjectConfiguration
+    {
+      public function setup()
+      {
+        $this->enablePlugins(array(
+          ...
+          'isicsHttpCachePlugin',
+        ));
+      }
+    }
+    
+For ESI support, enable module and helpers in your application(s) `settings.yml`:
+
+    [yml]
+    all:
+      .settings:
+        standard_helpers: [..., isicsHttpCache]
+        enabled_modules:  [..., isicsHttpCacheESI]
 
 
 ## Configuration ##
-all:
-  isics_http_cache_plugin:
-    esi:
-      enabled:     false
-      allowed_ips: [127.0.0.1]
+
+By default, ESI are enabled in prod env.
+Although, you should have to add the IP of your gateway.
+
+This can be done in your application(s) `app.yml`:
+
+    [yml]
+    all:
+      isics_http_cache_plugin:
+        esi:
+          enabled:     false
+          allowed_ips: [127.0.0.1]
+          
+
+### Varnish configuration ###
+
+Exactly like Symfony2, you have to setup Varnish to add a particular header telling that ESI are supported:
+
+    sub vcl_recv {
+        set req.http.Surrogate-Capability = "abc=ESI/1.0";
+    }
+
+    sub vcl_fetch {
+        if (beresp.http.Surrogate-Control ~ "ESI/1.0") {
+            set beresp.do_esi = true;    
+            unset beresp.http.Surrogate-Control;        
+        }
+    }
       
       
 ## Recommandations ##      
