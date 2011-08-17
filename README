@@ -1,7 +1,7 @@
 # isicsHttpCachePlugin #
 
 Excited by **Symfony2 Http Cache** but still have heavy load projects to maintain under Symfony 1.4?  
-Inspired by Symfony2 (concpets and code), this plugin is for you!
+Inspired by Symfony2 (concepts and code), this plugin is for you!
 
 isicsHttpCachePlugin fits to our (basic) actual requirements and doesn't already provides all HTTP cache mechanisms. But feel free to contribute!
 
