@@ -1,0 +1,107 @@
+# isicsHttpCachePlugin #
+
+Excited by Symfony2 Http Cache but still have heavy load projects to maintain under Symfony 1.4?
+Inspired by Symfony2 (concpets and code), this plugin is for you!
+
+isicsHttpCachePlugin fits to our (basic) actual requirements and doesn't already provides all HTTP cache mechanisms.
+But feel free to contribute!
+
+
+It comes with :
+* 1 new method for sfWebRequest:
+  * `getETags()`
+* 4 new methods for sfWebResponse:
+  * `isNotModified(sfWebRequest $request)`
+  * `setETag($etag)`
+  * `setLastModified($date)`
+  * `setMaxAge($duration)`
+* ESI support via 2 new helpers:
+  * `include_component_esi($module_name, $component_name, $vars)`
+  * `include_partial_esi($template_name, $vars)`
+  
+The new methods are unit tested.
+
+
+## Benchmark ##
+
+We've made a first benchmark with an homepage between 2 versions with exactly the same cache strategy:
+
+1. a classical version with Symfony cache (optimized, 0 SQL queries)
+  6 cached components with different TTL and so no cache for action
+
+1. a version with Varnish 
+  TTL for action and 7 ESI tags (1 userbar without caching and the 6 others with different TTL)
+  Symfony is still called at each request but only for userbar.
+  
+The benchmark was made with Siege tool.
+It shows a 10 factor between Varnish and Symfony cache (400 req/sec vs 40).
+
+
+## ESI (Edge Side Includes) support ##
+
+The new helpers `include_component_esi`, `include_partial_esi` are very similar to Symfony ones.
+
+If ESI are enabled (true by default in prod env) and only if a gateway handling ESI is installed (we know that thanks to a dedicated header), an ESI tag is rendered rather than the content.
+Rendering the content is the role of a special action.
+Else, the content is direclty rendered exactly like with the Symfony helpers.
+
+As of Symfony2, cache expiration and validation mechanisms are supported.
+
+Both helpers accept an optional `cache` argument.
+The value has a mixed type:
+
+* For expiration, simply give a duration in seconds:
+[php]
+<?php include_compoent_esi('news', 'showLatest', array('limit' => 5, 'cache' => 300)) ?>
+In this example, the latest news component will be refresh every 5 minutes.
+
+
+* For validation, the argument value must be a string. It corresponds to a class name that must defines one or both static methods `getLastModified` and `getETag`:
+
+[php]
+<?php include_component_esi('news', 'showLatest', array('limit' => 5, 'cache' => 'NewsService') ?>
+
+[php]
+<?php
+
+static public function getLastModified($vars)
+{
+  return NewsPeer::getLastModified();
+}
+
+and/or :
+
+[php]
+<?php
+static public function getETag($vars)
+{
+  return NewsPeer::computeETag();
+}
+
+Note the `$vars` argument. It is the vars you passed to the helpers. Use it as you like ;)
+
+
+
+## Configuration ##
+all:
+  isics_http_cache_plugin:
+    esi:
+      enabled:     false
+      allowed_ips: [127.0.0.1]
+      
+      
+## Recommandations ##      
+
+ * Do not give large vars to ESI helpers since the vars are serialized and passed to the internal action on the url.
+      
+      
+## Known issues ##
+
+* Slots are broken when using ESI.
+
+
+## Roadmap ##
+
+* Manage cache invalidation with a cache info catalog (like sfMemcacheCache).
+* Try to make ESI render as light as possible.
+* Write functional tests (not so easy with plugins)

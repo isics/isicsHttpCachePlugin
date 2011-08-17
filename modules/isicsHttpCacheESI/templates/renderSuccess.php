@@ -1,0 +1,1 @@
+<?php include_component($params['module_name'], $params['component_name'], $params['vars']) ?>
