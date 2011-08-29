@@ -1,0 +1,7 @@
+isics_http_cache_esi_render_component:
+  url:   /isicsHttpCacheESI/renderComponent/:module_name/:component_name
+  param: { module: isicsHttpCacheESI, action: renderComponent }
+
+isics_http_cache_esi_render_partial:
+  url:   /isicsHttpCacheESI/renderPartial/:module_name/:template_name
+  param: { module: isicsHttpCacheESI, action: renderPartial }

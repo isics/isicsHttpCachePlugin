@@ -5,7 +5,7 @@
  <summary>Backports Symfony2 http cache concepts.</summary>
  <description>
   Excited by Symfony2 Http Cache but still have heavy load projects to maintain under Symfony 1.4?
-  Inspired by Symfony2 (concpets and code), this plugin is for you!
+  Inspired by Symfony2 (concepts and code), this plugin is for you!
  </description>
  <lead>
   <name>Isics</name>
@@ -13,10 +13,10 @@
   <email>contact@isics.fr</email>
   <active>yes</active>
  </lead>
- <date>2011-08-17</date>
+ <date>2011-08-24</date>
  <version>
-   <release>0.9.0</release>
-   <api>0.9.0</api>
+   <release>0.9.1</release>
+   <api>0.9.1</api>
  </version>
  <stability>
   <release>beta</release>
@@ -47,7 +47,7 @@
       <file name="BaseisicsHttpCacheESIActions.class.php" role="data" />
      </dir>
      <dir name="templates">
-      <file name="renderSuccess.php" role="data" />
+      <file name="renderComponentSuccess.php" role="data" />
      </dir>
     </dir>
    </dir>
@@ -81,7 +81,25 @@
 
  <phprelease />
 
- <changelog>    
+ <changelog>
+  <release>
+   <version>
+    <release>0.9.1</release>
+    <api>0.9.1</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2011-08-24</date>
+   <license>MIT</license>
+   <notes>
+    *   changed ESI internal URI to keep module/[component|template] path (maybe usefull for purge)
+    *   `renderComponent` and `renderPartial` are now 2 different actions
+    *   `include_partial_esi` now works if no module is defined
+    *   fixed typos in README
+   </notes>
+  </release>
   <release>
    <version>
     <release>0.9.0</release>
@@ -96,6 +114,6 @@
    <notes>
      First release
    </notes>
-  </release>   
+  </release>
  </changelog>
 </package>

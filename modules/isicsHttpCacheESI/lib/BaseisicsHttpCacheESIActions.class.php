@@ -9,15 +9,13 @@
 
 class BaseisicsHttpCacheESIActions extends sfActions
 { 
-  
+
   /**
-   * Renders a partial or a component for a reverse proxy (Varnish or other)
-   *
-   * @param sfWebRequest $request  a web request
+   * Handles cache expiration and validation
    *
    * @author Nicolas Charlot <nicolas.charlot@isics.fr>
-   */
-  public function executeRender(sfWebRequest $request)
+   */  
+  public function preExecute()
   {
     if (!sfConfig::get('app_isics_http_cache_plugin_esi_enabled', false))
     {
@@ -27,48 +25,71 @@ class BaseisicsHttpCacheESIActions extends sfActions
     if (!in_array($this->request->getRemoteAddress(), sfConfig::get('app_isics_http_cache_plugin_esi_allowed_ips', array('127.0.0.1'))))
     {
       throw new sfException(sprintf('IP %s not allowed!', $this->request->getRemoteAddress()));
-    }    
+    }
     
-    $this->params = unserialize($request->getParameter('params'));
+    $this->vars = unserialize($this->request->getParameter('vars'));
     
-    if (isset($this->params['vars']['cache']))
+    if (isset($this->vars['cache']))
     {
       // Expiration:
-      if (is_int($this->params['vars']['cache']))
+      if (is_int($this->vars['cache']))
       {
-        $this->getResponse()->setMaxAge($this->params['vars']['cache']);
+        $this->getResponse()->setMaxAge($this->vars['cache']);
       }
 
       // Validation:
       else
       {
         // Validation with Last-Modified header:        
-        if (method_exists($this->params['vars']['cache'], 'getLastModified'))
+        if (method_exists($this->vars['cache'], 'getLastModified'))
         {
-          $this->getResponse()->setLastModified(call_user_func(array($this->params['vars']['cache'], 'getLastModified'), $this->params['vars']));
+          $this->getResponse()->setLastModified(call_user_func(array($this->vars['cache'], 'getLastModified'), $this->vars));
         }
         
         // Validation with ETag header:        
-        if (method_exists($this->params['vars']['cache'], 'getETag'))
+        if (method_exists($this->vars['cache'], 'getETag'))
         {
-          $this->getResponse()->setETag(call_user_func(array($this->params['vars']['cache'], 'getETag'), $this->params['vars']));
+          $this->getResponse()->setETag(call_user_func(array($this->vars['cache'], 'getETag'), $this->vars));
         }
         
-        if ($this->getResponse()->isNotModified($request))
+        if ($this->getResponse()->isNotModified($this->request))
         {
           return sfView::NONE;
         }
       }
       
-      unset($this->params['vars']['cache']);
+      unset($this->vars['cache']);
     }
     
-    $this->setLayout(false);
-    
-    // If it's a partial to render (otherwise it's a component)
-    if (isset($this->params['template_name']))
-    {
-      return $this->renderPartial($this->params['template_name'], $this->params['vars']);      
-    }
+    $this->setLayout(false);    
   }
+  
+  /**
+   * Renders a component for a reverse proxy (Varnish or another one)
+   *
+   * @param sfWebRequest $request  a web request
+   *
+   * @author Nicolas Charlot <nicolas.charlot@isics.fr>
+   */
+  public function executeRenderComponent(sfWebRequest $request)
+  {
+    // Note: we don't use camel case cause members moduleName already exists
+    $this->module_name    = $request->getParameter('module_name');
+    $this->component_name = $request->getParameter('component_name');
+  }
+  
+  /**
+   * Renders a partial for a reverse proxy (Varnish or another one)
+   *
+   * @param sfWebRequest $request  a web request
+   *
+   * @author Nicolas Charlot <nicolas.charlot@isics.fr>
+   */
+  public function executeRenderPartial(sfWebRequest $request)
+  {
+    return $this->renderPartial(
+      $request->getParameter('module_name').'/'.$request->getParameter('template_name'),
+      $this->vars
+    );
+  }  
 }
