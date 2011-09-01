@@ -20,7 +20,7 @@ function include_component_esi($moduleName, $componentName, $vars = array())
   $context = sfContext::getInstance();
   
   if (sfConfig::get('app_isics_http_cache_plugin_esi_enabled', false)
-    && 'abc=ESI/1.0' === $context->getRequest()->getHttpHeader('Surrogate-Capability') || true)
+    && 'abc=ESI/1.0' === $context->getRequest()->getHttpHeader('Surrogate-Capability'))
   { 
     $src  = url_for(sprintf('@isics_http_cache_esi_render_component?module_name=%s&component_name=%s', $moduleName, $componentName));
     $src .= '?vars='.urlencode(serialize($vars));
@@ -49,7 +49,7 @@ function include_partial_esi($templateName, $vars = array())
   $context = sfContext::getInstance();  
   
   if (sfConfig::get('app_isics_http_cache_plugin_esi_enabled', false)
-    && 'abc=ESI/1.0' === $context->getRequest()->getHttpHeader('Surrogate-Capability') || true)  
+    && 'abc=ESI/1.0' === $context->getRequest()->getHttpHeader('Surrogate-Capability'))  
   {
     // partial is in another module?
     if (false !== $sep = strpos($templateName, '/'))
