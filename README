@@ -116,7 +116,7 @@ The value has a mixed type:
     Note the `$vars` argument. It is the vars you passed to the helpers. Use it as you like ;)
 
 
-## Invalidation ==
+## Invalidation ##
 
 The method `isicsHttpCachePlugin::invalidate()` gives you ability to invalidate one or more url.
 It uses HTTP BAN and PURGE requests.
