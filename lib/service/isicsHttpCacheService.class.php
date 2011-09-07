@@ -99,8 +99,43 @@ class isicsHttpCacheService
     }
   }
   
+  /**
+   * Send a HTTP PURGE request to the reverse proxy
+   *
+   * @param string $url to purge
+   *
+   * @return boolean  True if url has been purged
+   *
+   * @author Nicolas Charlot <nicolas.charlot@isics.fr>
+   */
   static public function purge($url)
   {
-    // @todo
+    if (!function_exists('curl_init'))
+    {
+      throw new RuntimeException('PHP CURL support must be enabled to use purge method.');
+    }    
+    
+    $ch = curl_init($url);
+    curl_setopt_array($ch, array(
+      CURLOPT_CUSTOMREQUEST  => 'PURGE',
+      CURLOPT_FRESH_CONNECT  => true,
+      CURLOPT_HEADER         => true,
+      CURLOPT_NOBODY         => true,
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_TIMEOUT        => 5,
+    ));
+    curl_exec($ch);     
+    
+    // We assume that reverse proxy is configured to return :
+    // - the 200 status if url has been purged
+    // - the 404 status if url wasn't in cache
+    if (!in_array($http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE), array(200, 404)))
+    {
+      throw new RuntimeException(sprintf('Reverse proxy returned an HTTP %d error purging url %s.', $http_code, $url));
+    }
+
+    curl_close($ch);
+
+    return 200 == $http_code;
   }
 }
