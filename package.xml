@@ -13,10 +13,10 @@
   <email>contact@isics.fr</email>
   <active>yes</active>
  </lead>
- <date>2011-08-24</date>
+ <date>2011-09-07</date>
  <version>
-   <release>0.9.2</release>
-   <api>0.9.2</api>
+   <release>0.9.3</release>
+   <api>0.9.3</api>
  </version>
  <stability>
   <release>beta</release>
@@ -36,7 +36,10 @@
     </dir>
     <dir name="service">
      <file name="isicsHttpCacheService.class.php" role="data" />
-    </dir>    
+    </dir>
+    <dir name="task">
+     <file name="isicsHttpCacheInvalidateTask.class.php" role="data" />
+    </dir>        
    </dir>
    <dir name="modules">
     <dir name="isicsHttpCacheESI">
@@ -82,6 +85,21 @@
  <phprelease />
 
  <changelog>
+  <release>
+   <version>
+    <release>0.9.3</release>
+    <api>0.9.3</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2011-09-01</date>
+   <license>MIT</license>
+   <notes>
+    *   added invalidation support
+   </notes>
+  </release>
   <release>
    <version>
     <release>0.9.2</release>
