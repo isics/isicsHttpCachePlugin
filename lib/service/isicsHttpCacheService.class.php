@@ -24,7 +24,7 @@ class isicsHttpCacheService
     {
       case 'getETags':
         $event->setReturnValue(
-          preg_split('/\s*,\s*/', $event->getSubject()->getHttpHeader('If-None-Match'), null, PREG_SPLIT_NO_EMPTY)          
+          preg_split('/\s*,\s*/', $event->getSubject()->getHttpHeader('If-None-Match'), null, PREG_SPLIT_NO_EMPTY)
         );
         return true;
       
@@ -100,42 +100,47 @@ class isicsHttpCacheService
   }
   
   /**
-   * Send a HTTP PURGE request to the reverse proxy
+   * Invalidates url(s) via HTTP BAN or PURGE
+   * use PURGE method for a single url and BAN for pattern
    *
-   * @param string $url to purge
+   * @param string $url_pattern  url pattern to purge
+   *                             (with Varnish, regexp is only suitable for BAN request)
+   * @param string $method       method (PURGE by default)
    *
-   * @return boolean  True if url has been purged
+   * @return boolean  True if url has been baned or purged
    *
    * @author Nicolas Charlot <nicolas.charlot@isics.fr>
    */
-  static public function purge($url)
+  static public function invalidate($url_pattern, $method = 'PURGE')
   {
+    if (!in_array($method, array('BAN', 'PURGE')))
+    {
+      throw new InvalidArgumentException('Only BAN and PURGE methods supported.');
+    }
+    
     if (!function_exists('curl_init'))
     {
       throw new RuntimeException('PHP CURL support must be enabled to use purge method.');
-    }    
-    
-    $ch = curl_init($url);
-    curl_setopt_array($ch, array(
-      CURLOPT_CUSTOMREQUEST  => 'PURGE',
-      CURLOPT_FRESH_CONNECT  => true,
-      CURLOPT_HEADER         => true,
-      CURLOPT_NOBODY         => true,
-      CURLOPT_RETURNTRANSFER => true,
-      CURLOPT_TIMEOUT        => 5,
-    ));
-    curl_exec($ch);     
-    
-    // We assume that reverse proxy is configured to return :
-    // - the 200 status if url has been purged
-    // - the 404 status if url wasn't in cache
-    if (!in_array($http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE), array(200, 404)))
-    {
-      throw new RuntimeException(sprintf('Reverse proxy returned an HTTP %d error purging url %s.', $http_code, $url));
     }
-
+    
+    $ch = curl_init($url_pattern);
+    curl_setopt_array($ch, array(
+      CURLOPT_CUSTOMREQUEST  => $method,
+      CURLOPT_FRESH_CONNECT  => true,
+      CURLOPT_NOBODY         => true,
+      CURLOPT_TIMEOUT        => 10,
+    ));
+    
+    if (false === curl_exec($ch))
+    {
+      throw new RuntimeException(sprintf('An error occured when invalidating url %s: %s.', $url_pattern, curl_error($ch)));
+    }
+    
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    
     curl_close($ch);
 
-    return 200 == $http_code;
+    // We assume that a the 200 status means "baned" or "purged"
+    return 200 === $http_code;
   }
 }

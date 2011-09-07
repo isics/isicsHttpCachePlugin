@@ -91,5 +91,5 @@ class BaseisicsHttpCacheESIActions extends sfActions
       $request->getParameter('module_name').'/'.$request->getParameter('template_name'),
       $this->vars
     );
-  }  
+  }
 }
