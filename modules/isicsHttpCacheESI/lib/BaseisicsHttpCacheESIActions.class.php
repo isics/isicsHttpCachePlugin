@@ -8,27 +8,28 @@
  */
 
 class BaseisicsHttpCacheESIActions extends sfActions
-{ 
+{
 
   /**
    * Handles cache expiration and validation
    *
    * @author Nicolas Charlot <nicolas.charlot@isics.fr>
-   */  
+   */
   public function preExecute()
   {
-    if (!sfConfig::get('app_isics_http_cache_plugin_esi_enabled', false))
+  	$esiConfiguration = sfConfig::get('app_isics_http_cache_plugin_esi');
+    if (!isset($esiConfiguration['enabled']) || true !== $esiConfiguration['enabled'])
     {
       throw new sfException('ESI not enabled!');
     }
-    
+
     if (!in_array($this->request->getRemoteAddress(), sfConfig::get('app_isics_http_cache_plugin_esi_allowed_ips', array('127.0.0.1'))))
     {
       throw new sfException(sprintf('IP %s not allowed!', $this->request->getRemoteAddress()));
     }
-    
+
     $this->vars = unserialize($this->request->getParameter('vars'));
-    
+
     if (isset($this->vars['cache']))
     {
       // Expiration:
@@ -40,30 +41,30 @@ class BaseisicsHttpCacheESIActions extends sfActions
       // Validation:
       else
       {
-        // Validation with Last-Modified header:        
+        // Validation with Last-Modified header:
         if (method_exists($this->vars['cache'], 'getLastModified'))
         {
           $this->getResponse()->setLastModified(call_user_func(array($this->vars['cache'], 'getLastModified'), $this->vars));
         }
-        
-        // Validation with ETag header:        
+
+        // Validation with ETag header:
         if (method_exists($this->vars['cache'], 'getETag'))
         {
           $this->getResponse()->setETag(call_user_func(array($this->vars['cache'], 'getETag'), $this->vars));
         }
-        
+
         if ($this->getResponse()->isNotModified($this->request))
         {
           return sfView::NONE;
         }
       }
-      
+
       unset($this->vars['cache']);
     }
-    
-    $this->setLayout(false);    
+
+    $this->setLayout(false);
   }
-  
+
   /**
    * Renders a component for a reverse proxy (Varnish or another one)
    *
@@ -77,7 +78,7 @@ class BaseisicsHttpCacheESIActions extends sfActions
     $this->module_name    = $request->getParameter('module_name');
     $this->component_name = $request->getParameter('component_name');
   }
-  
+
   /**
    * Renders a partial for a reverse proxy (Varnish or another one)
    *
