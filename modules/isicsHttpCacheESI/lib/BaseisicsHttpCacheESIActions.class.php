@@ -8,27 +8,27 @@
  */
 
 class BaseisicsHttpCacheESIActions extends sfActions
-{ 
+{
 
   /**
    * Handles cache expiration and validation
    *
    * @author Nicolas Charlot <nicolas.charlot@isics.fr>
-   */  
+   */
   public function preExecute()
   {
     if (!sfConfig::get('app_isics_http_cache_plugin_esi_enabled', false))
     {
       throw new sfException('ESI not enabled!');
     }
-    
+
     if (!in_array($this->request->getRemoteAddress(), sfConfig::get('app_isics_http_cache_plugin_esi_allowed_ips', array('127.0.0.1'))))
     {
       throw new sfException(sprintf('IP %s not allowed!', $this->request->getRemoteAddress()));
     }
-    
+
     $this->vars = unserialize($this->request->getParameter('vars'));
-    
+
     if (isset($this->vars['cache']))
     {
       // Expiration:
@@ -40,50 +40,56 @@ class BaseisicsHttpCacheESIActions extends sfActions
       // Validation:
       else
       {
-        // Validation with Last-Modified header:        
+        // Validation with Last-Modified header:
         if (method_exists($this->vars['cache'], 'getLastModified'))
         {
           $this->getResponse()->setLastModified(call_user_func(array($this->vars['cache'], 'getLastModified'), $this->vars));
         }
-        
-        // Validation with ETag header:        
+
+        // Validation with ETag header:
         if (method_exists($this->vars['cache'], 'getETag'))
         {
           $this->getResponse()->setETag(call_user_func(array($this->vars['cache'], 'getETag'), $this->vars));
         }
-        
+
         if ($this->getResponse()->isNotModified($this->request))
         {
           return sfView::NONE;
         }
       }
-      
+
       unset($this->vars['cache']);
-    }
-
-    // Store custom HTTP headers that can be used for granulary purging cache
-    /*
-     * x-symfony-viewname : can be used to invalidate corresponding cache objects when a component/partial
-     * template has been changed. eg. (varnish) : ban.url obj.http.x-symfony-viewname == product/someview
-     */
-    $this->getResponse()->setHttpHeader(
-      'x-symfony-view',
-      sprintf('%s/%s', $this->getRequest()->getParameter('module_name'),
-        $this->getRequest()->getParameter('component_name', $this->getRequest()->getParameter('template_name')))
-    );
-
-    /*
-     * x-docuri : can be used to invalidated corresponding cache objects when attributes have changed in the datastore.
-     * eg. (varnish) : ban.url obj.http.x-docuri == product/123
-     */
-    if (isset($this->vars['_docUri']))
-    {
-      $this->getResponse()->setHttpHeader('x-docuri', $this->vars['_docUri']);
     }
 
     $this->setLayout(false);
   }
-  
+
+  /**
+   * Handles definition of custom HTTP headers facilitating granular cache invalidation.
+   *
+   * - x-symfony-viewname : This header can be used to invalidate cache objects when
+   * a component / partial template has been modified.
+   * Invalidation example (varnish) : ban.url obj.http.x-symfony-viewname == product/someview
+   * - x-docuri : This header can be used to invalidate cache objects when a document attributes
+   * have changed in datastore.
+   * Invalidation example (varnish) : ban.url obj.http.x-docuri == product/123
+   */
+  public function postExecute()
+  {
+    // x-symfony-viewname
+    $this->getResponse()->setHttpHeader(
+    'x-symfony-view',
+          sprintf('%s/%s', $this->getRequest()->getParameter('module_name'),
+            $this->getRequest()->getParameter('component_name', $this->getRequest()->getParameter('template_name')))
+    );
+
+    // x-docuri
+    if (isset($this->vars['_docUri']))
+    {
+    $this->getResponse()->setHttpHeader('x-docuri', $this->vars['_docUri']);
+    }
+  }
+
   /**
    * Renders a component for a reverse proxy (Varnish or another one)
    *
