@@ -60,8 +60,28 @@ class BaseisicsHttpCacheESIActions extends sfActions
       
       unset($this->vars['cache']);
     }
-    
-    $this->setLayout(false);    
+
+    // Store custom HTTP headers that can be used for granulary purging cache
+    /*
+     * x-symfony-viewname : can be used to invalidate corresponding cache objects when a component/partial
+     * template has been changed. eg. (varnish) : ban.url obj.http.x-symfony-viewname == product/someview
+     */
+    $this->getResponse()->setHttpHeader(
+      'x-symfony-view',
+      sprintf('%s/%s', $this->getRequest()->getParameter('module_name'),
+        $this->getRequest()->getParameter('component_name', $this->getRequest()->getParameter('template_name')))
+    );
+
+    /*
+     * x-docuri : can be used to invalidated corresponding cache objects when attributes have changed in the datastore.
+     * eg. (varnish) : ban.url obj.http.x-docuri == product/123
+     */
+    if (isset($this->vars['_docUri']))
+    {
+      $this->getResponse()->setHttpHeader('x-docuri', $this->vars['_docUri']);
+    }
+
+    $this->setLayout(false);
   }
   
   /**
@@ -77,7 +97,7 @@ class BaseisicsHttpCacheESIActions extends sfActions
     $this->module_name    = $request->getParameter('module_name');
     $this->component_name = $request->getParameter('component_name');
   }
-  
+
   /**
    * Renders a partial for a reverse proxy (Varnish or another one)
    *
