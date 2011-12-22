@@ -17,13 +17,13 @@ class BaseisicsHttpCacheESIActions extends sfActions
    */
   public function preExecute()
   {
-  	$esiConfiguration = sfConfig::get('app_isics_http_cache_plugin_esi');
-    if (!isset($esiConfiguration['enabled']) || true !== $esiConfiguration['enabled'])
+  	$esi_configuration = sfConfig::get('app_isics_http_cache_plugin_esi');
+    if (!isset($esi_configuration['enabled']) || true !== $esi_configuration['enabled'])
     {
       throw new sfException('ESI not enabled!');
     }
 
-    if (!in_array($this->request->getRemoteAddress(), sfConfig::get('app_isics_http_cache_plugin_esi_allowed_ips', array('127.0.0.1'))))
+    if (!in_array($this->request->getRemoteAddress(), $esi_configuration['allowed_ips'], array('127.0.0.1')))
     {
       throw new sfException(sprintf('IP %s not allowed!', $this->request->getRemoteAddress()));
     }

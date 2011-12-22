@@ -19,11 +19,12 @@ function include_component_esi($moduleName, $componentName, $vars = array())
 {
   $context = sfContext::getInstance();
 
-  $esiConfiguration = sfConfig::get('app_isics_http_cache_plugin_esi');
-  if (isset($esiConfiguration['enabled'])
-    && true === $esiConfiguration['enabled']
+  $esi_configuration = sfConfig::get('app_isics_http_cache_plugin_esi');
+  if (isset($esi_configuration['enabled'])
+    && true === $esi_configuration['enabled']
     && 'abc=ESI/1.0' === $context->getRequest()->getHttpHeader('Surrogate-Capability'))
-  {    $src  = url_for(sprintf('@isics_http_cache_esi_render_component?module_name=%s&component_name=%s', $moduleName, $componentName));
+  {
+    $src  = url_for(sprintf('@isics_http_cache_esi_render_component?module_name=%s&component_name=%s', $moduleName, $componentName));
     $src .= '?vars='.urlencode(serialize($vars));
 
     echo tag('esi:include', array('src' => $src));
@@ -49,12 +50,12 @@ function include_partial_esi($templateName, $vars = array())
 {
   $context = sfContext::getInstance();
 
-  $esiConfiguration = sfConfig::get('app_isics_http_cache_plugin_esi');
-  if (isset($esiConfiguration['enabled'])
-    && true === $esiConfiguration['enabled']
+  $esi_configuration = sfConfig::get('app_isics_http_cache_plugin_esi');
+  if (isset($esi_configuration['enabled'])
+    && true === $esi_configuration['enabled']
     && 'abc=ESI/1.0' === $context->getRequest()->getHttpHeader('Surrogate-Capability'))
   {
-  	// partial is in another module?
+    // partial is in another module?
     if (false !== $sep = strpos($templateName, '/'))
     {
       $moduleName   = substr($templateName, 0, $sep);
