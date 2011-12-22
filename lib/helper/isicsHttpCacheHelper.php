@@ -18,20 +18,22 @@
 function include_component_esi($moduleName, $componentName, $vars = array())
 {
   $context = sfContext::getInstance();
-  
-  if (sfConfig::get('app_isics_http_cache_plugin_esi_enabled', false)
+
+  $esi_configuration = sfConfig::get('app_isics_http_cache_plugin_esi');
+  if (isset($esi_configuration['enabled'])
+    && true === $esi_configuration['enabled']
     && 'abc=ESI/1.0' === $context->getRequest()->getHttpHeader('Surrogate-Capability'))
-  { 
+  {
     $src  = url_for(sprintf('@isics_http_cache_esi_render_component?module_name=%s&component_name=%s', $moduleName, $componentName));
     $src .= '?vars='.urlencode(serialize($vars));
-  
-    echo tag('esi:include', array('src' => $src));    
-    
+
+    echo tag('esi:include', array('src' => $src));
+
     $context->getResponse()->setHttpHeader('Surrogate-Control', 'ESI/1.0');
   }
   else
   {
-    unset($vars['cache']);    
+    unset($vars['cache']);
     return include_component($moduleName, $componentName, $vars);
   }
 }
@@ -46,10 +48,12 @@ function include_component_esi($moduleName, $componentName, $vars = array())
  */
 function include_partial_esi($templateName, $vars = array())
 {
-  $context = sfContext::getInstance();  
-  
-  if (sfConfig::get('app_isics_http_cache_plugin_esi_enabled', false)
-    && 'abc=ESI/1.0' === $context->getRequest()->getHttpHeader('Surrogate-Capability'))  
+  $context = sfContext::getInstance();
+
+  $esi_configuration = sfConfig::get('app_isics_http_cache_plugin_esi');
+  if (isset($esi_configuration['enabled'])
+    && true === $esi_configuration['enabled']
+    && 'abc=ESI/1.0' === $context->getRequest()->getHttpHeader('Surrogate-Capability'))
   {
     // partial is in another module?
     if (false !== $sep = strpos($templateName, '/'))
@@ -61,12 +65,12 @@ function include_partial_esi($templateName, $vars = array())
     {
       $moduleName = $context->getActionStack()->getLastEntry()->getModuleName();
     }
-    
+
     $src  = url_for(sprintf('@isics_http_cache_esi_render_partial?module_name=%s&template_name=%s', $moduleName, $templateName));
     $src .= '?vars='.urlencode(serialize($vars));
-    
+
     echo tag('esi:include', array('src' => $src));
-    
+
     $context->getResponse()->setHttpHeader('Surrogate-Control', 'ESI/1.0');
   }
   else
