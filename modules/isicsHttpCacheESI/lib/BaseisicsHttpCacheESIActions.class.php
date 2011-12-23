@@ -17,12 +17,13 @@ class BaseisicsHttpCacheESIActions extends sfActions
    */
   public function preExecute()
   {
-    if (!sfConfig::get('app_isics_http_cache_plugin_esi_enabled', false))
+  	$esi_configuration = sfConfig::get('app_isics_http_cache_plugin_esi');
+    if (!isset($esi_configuration['enabled']) || true !== $esi_configuration['enabled'])
     {
       throw new sfException('ESI not enabled!');
     }
 
-    if (!in_array($this->request->getRemoteAddress(), sfConfig::get('app_isics_http_cache_plugin_esi_allowed_ips', array('127.0.0.1'))))
+    if (!in_array($this->request->getRemoteAddress(), $esi_configuration['allowed_ips']))
     {
       throw new sfException(sprintf('IP %s not allowed!', $this->request->getRemoteAddress()));
     }
@@ -88,6 +89,8 @@ class BaseisicsHttpCacheESIActions extends sfActions
     {
     $this->getResponse()->setHttpHeader('x-docuri', $this->vars['_docUri']);
     }
+
+    $this->setLayout(false);
   }
 
   /**
