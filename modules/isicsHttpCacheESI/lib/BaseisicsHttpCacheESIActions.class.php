@@ -73,7 +73,12 @@ class BaseisicsHttpCacheESIActions extends sfActions
    * Invalidation example (varnish) : ban.url obj.http.x-symfony-viewname == product/someview
    * - x-docuri : This header can be used to invalidate cache objects when a document attributes
    * have changed in datastore.
+   * Header value is identical to component variable $_docUri
    * Invalidation example (varnish) : ban.url obj.http.x-docuri == product/123
+   * - x-guid : This header can be used to invalidate the cache object corresponding to the component / partial
+   * currently executed.
+   * Header value is identical to component variable $_guid. If it is not set, it is automatically generated using uniqid()
+   * Invalidation example (varnish) : ban.url obj.http.x-guid == the_guid
    */
   public function postExecute()
   {
@@ -89,6 +94,13 @@ class BaseisicsHttpCacheESIActions extends sfActions
     {
     $this->getResponse()->setHttpHeader('x-docuri', $this->vars['_docUri']);
     }
+
+    // x-guid
+    if (!isset($this->vars['_guid']))
+    {
+    	$this->vars['_guid'] = uniqid();
+    }
+    $this->getResponse()->setHttpHeader('x-guid', $this->vars['_guid']);
 
     $this->setLayout(false);
   }
