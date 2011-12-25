@@ -2,9 +2,10 @@ all:
   isics_http_cache_plugin:
     esi:
       enabled:     false
-      allowed_ips: [127.0.0.1]
+      allowed_ips: [127.0.0.1, "::1"]
 
 prod:
   isics_http_cache_plugin:
     esi:
       enabled:     true
+

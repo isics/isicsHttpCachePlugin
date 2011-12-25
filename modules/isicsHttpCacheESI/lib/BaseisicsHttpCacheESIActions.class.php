@@ -62,25 +62,45 @@ class BaseisicsHttpCacheESIActions extends sfActions
       unset($this->vars['cache']);
     }
 
-    // Store custom HTTP headers that can be used for granulary purging cache
-    /*
-     * x-symfony-viewname : can be used to invalidate corresponding cache objects when a component/partial
-     * template has been changed. eg. (varnish) : ban.url obj.http.x-symfony-viewname == product/someview
-     */
+    $this->setLayout(false);
+  }
+
+  /**
+   * Handles definition of custom HTTP headers facilitating granular cache invalidation.
+   *
+   * - x-symfony-viewname : This header can be used to invalidate cache objects when
+   * a component / partial template has been modified.
+   * Invalidation example (varnish) : ban.url obj.http.x-symfony-viewname == product/someview
+   * - x-docuri : This header can be used to invalidate cache objects when a document attributes
+   * have changed in datastore.
+   * Header value is identical to component variable $_docUri
+   * Invalidation example (varnish) : ban.url obj.http.x-docuri == product/123
+   * - x-guid : This header can be used to invalidate the cache object corresponding to the component / partial
+   * currently executed.
+   * Header value is identical to component variable $_guid. If it is not set, it is automatically generated using uniqid()
+   * Invalidation example (varnish) : ban.url obj.http.x-guid == the_guid
+   */
+  public function postExecute()
+  {
+    // x-symfony-viewname
     $this->getResponse()->setHttpHeader(
-      'x-symfony-view',
-      sprintf('%s/%s', $this->getRequest()->getParameter('module_name'),
-        $this->getRequest()->getParameter('component_name', $this->getRequest()->getParameter('template_name')))
+    'x-symfony-view',
+          sprintf('%s/%s', $this->getRequest()->getParameter('module_name'),
+            $this->getRequest()->getParameter('component_name', $this->getRequest()->getParameter('template_name')))
     );
 
-    /*
-     * x-docuri : can be used to invalidated corresponding cache objects when attributes have changed in the datastore.
-     * eg. (varnish) : ban.url obj.http.x-docuri == product/123
-     */
+    // x-docuri
     if (isset($this->vars['_docUri']))
     {
-      $this->getResponse()->setHttpHeader('x-docuri', $this->vars['_docUri']);
+    $this->getResponse()->setHttpHeader('x-docuri', $this->vars['_docUri']);
     }
+
+    // x-guid
+    if (!isset($this->vars['_guid']))
+    {
+    	$this->vars['_guid'] = uniqid();
+    }
+    $this->getResponse()->setHttpHeader('x-guid', $this->vars['_guid']);
 
     $this->setLayout(false);
   }
