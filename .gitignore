@@ -1,1 +1,5 @@
 *.tgz
+
+# Editors temporary files
+*~
+*.swp
