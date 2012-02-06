@@ -114,6 +114,13 @@ class BaseisicsHttpCacheESIActions extends sfActions
    */
   public function executeRenderComponent(sfWebRequest $request)
   {
+    // Remove web_debug info
+    $esiConfiguration = sfConfig::get('app_isics_http_cache_plugin_esi');
+    if ($esiConfiguration['sf_web_debug'] === false)
+    {
+      sfConfig::set('sf_web_debug', false);
+    }
+
     // Note: we don't use camel case cause members moduleName already exists
     $this->module_name    = $request->getParameter('module_name');
     $this->component_name = $request->getParameter('component_name');
