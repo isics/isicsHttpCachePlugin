@@ -3,6 +3,7 @@ all:
     esi:
       enabled:     false
       allowed_ips: [127.0.0.1, "::1"]
+      sf_web_debug: false
 
 prod:
   isics_http_cache_plugin:

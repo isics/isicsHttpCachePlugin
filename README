@@ -141,6 +141,13 @@ You can test this tool in CLI with a dedicated task:
         $ symfony isics-http-cache:invalidate --method=BAN http://www.mydomain.tld/.*
     
     This will clear all the pages under this host.
+
+### On going
+
+A symfony filter can be added in your apps/[apps]/config/filters.yml file between cache and execution filters:
+
+    esi_ui:
+      class: isicsHttpCacheEsiUiFilter
     
 
 ### Custom HTTP headers ###
