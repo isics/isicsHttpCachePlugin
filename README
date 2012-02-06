@@ -156,15 +156,15 @@ The plugin adds custom HTTP headers to ESI components response in order to facil
 
 * x-symfony-viewname : This header can be used to invalidate cache objects when a component / partial template has been modified.  Invalidation example (varnish) : 
 
-        ban.url obj.http.x-symfony-viewname == product/someview
+        ban obj.http.x-symfony-viewname == product/someview
     
 * x-docuri : This header can be used to invalidate cache objects when a document attributes have changed in datastore. Header value is identical to component variable $_docUri. Invalidation example (varnish) :
 
-        ban.url obj.http.x-docuri == product/123
+        ban obj.http.x-docuri == product/123
     
 * x-guid : This header can be used to invalidate the cache object corresponding to the component / partial currently executed. Header value is identical to component variable $_guid. If it is not set, it is automatically generated using uniqid(). Invalidation example (varnish) : 
 
-        ban.url obj.http.x-guid == the_guid
+        ban obj.http.x-guid == the_guid
 
 ## Configuration ##
 
