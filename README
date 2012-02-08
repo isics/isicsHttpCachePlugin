@@ -142,14 +142,6 @@ You can test this tool in CLI with a dedicated task:
     
     This will clear all the pages under this host.
 
-### On going
-
-A symfony filter can be added in your apps/[apps]/config/filters.yml file between cache and execution filters:
-
-    esi_ui:
-      class: isicsHttpCacheEsiUiFilter
-    
-
 ### Custom HTTP headers ###
 
 The plugin adds custom HTTP headers to ESI components response in order to facilitate granular cache invalidation.
@@ -165,6 +157,33 @@ The plugin adds custom HTTP headers to ESI components response in order to facil
 * x-guid : This header can be used to invalidate the cache object corresponding to the component / partial currently executed. Header value is identical to component variable $_guid. If it is not set, it is automatically generated using uniqid(). Invalidation example (varnish) : 
 
         ban obj.http.x-guid == the_guid
+
+### Varnish admin connection
+
+A class ripped from https://github.com/timwhitlock/php-varnish to ease cache invalidation from PHP:
+
+        <?php
+        $host = sfConfig::get('app_varnish_host');
+        $port = sfConfig::get('app_varnish_port');
+        $secret = sfConfig::get('app_varnish_secret');
+        if ($host == '' || $port == '' || $secret == '')
+        {
+          throw new Exception('Impossible to configure Varnish Socket! Are you\'re app.yml file well configured?');
+        }
+        $socket = new VarnishAdminSocket($host, $port);
+        $socket->set_auth($secret."\n");
+        $socket->connect();
+        $socket->purge('obj.http.x-docuri == myx-docuri-which-goes-well');
+        $socket->quit();
+        
+
+### Filter ###
+
+A symfony filter can be added in your apps/[apps]/config/filters.yml file between cache and execution filters:
+
+    esi_ui:
+      class: isicsHttpCacheEsiUiFilter
+
 
 ## Configuration ##
 
