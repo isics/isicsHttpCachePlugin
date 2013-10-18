@@ -1,9 +1,12 @@
 all:
   isics_http_cache_plugin:
     esi:
-      enabled:     false
-      allowed_ips: [127.0.0.1, "::1"]
+      enabled:      false
+      allowed_ips:  [127.0.0.1, "::1"]
       sf_web_debug: false
+    servers:
+        - { address: 127.0.0.1, port: 80 }
+
   varnish:
     host: 'localhost'
     port: '6082'
