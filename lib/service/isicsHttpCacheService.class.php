@@ -93,63 +93,13 @@ class isicsHttpCacheService
         return true;
 
       case 'setMaxAge':
-        $event->getSubject()->setHttpHeader('Cache-Control', 'public, max-age='.$event['arguments'][0]);
+        $event->getSubject()->setHttpHeader('Cache-Control', 'public, max-age='.$event['arguments'][0].(2 === count($event['arguments']) ? ', s-maxage='.$event['arguments'][1] : ''));
         // @todo try to find a way to avoid set-cookies (cause gateway cache disabling)
         return true;
 
       default:
         return false;
     }
-  }
-
-  /**
-   * Invalidates url(s) via HTTP BAN or PURGE
-   * use PURGE method for a single url and BAN for pattern
-   *
-   * @param string $url_pattern  url pattern to purge
-   *                             (with Varnish, regexp is only suitable for BAN request)
-   * @param string $method       method (PURGE by default)
-   *
-   * @return boolean  True if url has been baned or purged
-   *
-   * @author Nicolas Charlot <nicolas.charlot@isics.fr>
-   */
-  static public function invalidate_old($url_pattern, $method = 'PURGE')
-  {
-    if (!in_array($method, array('BAN', 'PURGE')))
-    {
-      throw new InvalidArgumentException('Only BAN and PURGE methods supported.');
-    }
-
-    if (!function_exists('curl_init'))
-    {
-      throw new RuntimeException('PHP CURL support must be enabled to use purge method.');
-    }
-
-    $host = substr($url_pattern, 0, strpos($url_pattern, '/'));
-
-    $ch = curl_init();
-    curl_setopt_array($ch, array(
-      CURLOPT_URL            => $url_pattern,
-      CURLOPT_CUSTOMREQUEST  => $method,
-      CURLOPT_RETURNTRANSFER => true,
-      CURLOPT_HEADER         => true,
-      CURLOPT_NOBODY         => true,
-      CURLOPT_TIMEOUT        => 1000,
-      CURLOPT_HTTPHEADER     => array('Host' => $host),
-    ));
-
-    if (false === curl_exec($ch))
-    {
-      throw new RuntimeException(sprintf('An error occured when invalidating url %s: %s.', $url_pattern, curl_error($ch)));
-    }
-
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-    curl_close($ch);
-
-    // We assume that a the 200 status means "banned" or "purged"
-    return 200 === $http_code;
   }
 
   /**
