@@ -5,11 +5,16 @@ class isicsHttpCacheInvalidateTask extends sfBaseTask
   protected function configure()
   {
     $this->addArguments(array(
+      new sfCommandArgument('host', sfCommandArgument::REQUIRED, 'Host'),
       new sfCommandArgument('url', sfCommandArgument::REQUIRED, 'Url pattern')
     ));
-    
-    $this->addOption('method', null, sfCommandOption::PARAMETER_REQUIRED, 'Method', 'PURGE');
-    
+
+    $this->addOptions(array(
+      new sfCommandOption('method', null, sfCommandOption::PARAMETER_REQUIRED, 'Method', 'PURGE'),
+      new sfCommandOption('application', null, sfCommandOption::PARAMETER_REQUIRED, 'The application name', 'superbackend'),
+      new sfCommandOption('env', null, sfCommandOption::PARAMETER_REQUIRED, 'The environment', 'prod'),
+    ));
+
     $this->namespace           = 'isics-http-cache';
     $this->name                = 'invalidate';
     $this->briefDescription    = 'Invalidates url(s) via an HTTP BAN or PURGE requests.';
@@ -23,13 +28,7 @@ EOF;
 
   protected function execute($arguments = array(), $options = array())
   {
-    if (isicsHttpCacheService::invalidate($arguments['url'], $options['method']))
-    {
-      $this->logSection('baned or purged', $arguments['url']);
-    }
-    else
-    {
-      $this->logSection('not in cache', $arguments['url'], 'ERROR');
-    }
+    isicsHttpCacheService::invalidate($arguments['host'], $arguments['url'], $options['method']);
+    $this->logSection('banned or purged');
   }
 }
